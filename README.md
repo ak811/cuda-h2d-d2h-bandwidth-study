@@ -1,4 +1,4 @@
-# CPU–GPU Data Transfer Bandwidth using CUDA
+# CPU-GPU Data Transfer Bandwidth using CUDA
 
 This project measures the effective memory transfer bandwidth between host (CPU) memory and device (GPU) memory using CUDA.
 
@@ -109,7 +109,33 @@ head bandwidth.csv
 
 ---
 
-## Generating the Bandwidth Plot
+## Tabulated Results
+
+Below is a table version of the sample CSV output, showing effective bandwidth (GB/s) for each transfer size and configuration.
+
+| Size (MB) | H2D Pageable | D2H Pageable | H2D Pinned | D2H Pinned |
+|-----------|--------------|--------------|------------|------------|
+| 1         | 3.846        | 2.118        | 2.506      | 4.864      |
+| 2         | 11.652       | 6.564        | 9.892      | 8.520      |
+| 4         | 13.352       | 7.090        | 10.056     | 8.928      |
+| 8         | 19.567       | 12.200       | 22.272     | 15.912     |
+| 16        | 20.608       | 12.727       | 23.510     | 15.352     |
+| 32        | 19.644       | 13.076       | 12.188     | 15.112     |
+| 64        | 8.120        | 9.064        | 15.961     | 15.407     |
+| 128       | 5.152        | 13.316       | 16.913     | 15.363     |
+| 256       | 4.525        | 13.428       | 17.027     | 15.364     |
+| 512       | 4.494        | 13.397       | 17.120     | 15.197     |
+| 1024      | 13.679       | 13.396       | 17.392     | 15.021     |
+
+Interpretation in short:
+
+- Small sizes (1 to 4 MB) are dominated by latency, so bandwidth is low and noisy.
+- Medium sizes (8 to 32 MB) start to approach hardware limits.
+- Large sizes show pinned memory consistently outperforming pageable memory, especially for H2D.
+
+---
+
+## Bandwidth Plot
 
 Once `bandwidth.csv` has been created, use the Python script to generate a plot:
 
@@ -117,28 +143,24 @@ Once `bandwidth.csv` has been created, use the Python script to generate a plot:
 python plot_bandwidth.py
 ```
 
-or, depending on your environment:
+or:
 
 ```bash
 python3 plot_bandwidth.py
 ```
 
-This script will:
+The script will create `bandwidth_plot.png`. A typical plot looks like this:
 
-- Load `bandwidth.csv`
-- Plot bandwidth (GB/s) vs. transfer size (MB)
-- Include four curves:
-  - H2D – Pageable
-  - D2H – Pageable
-  - H2D – Pinned
-  - D2H – Pinned
-- Save the figure as:
+![CPU GPU transfer bandwidth vs array size](bandwidth_plot.png)
 
-```text
-bandwidth_plot.png
-```
+The figure contains four curves:
 
-If you are on a system with a display, a window will also show the plot.
+- H2D - Pageable
+- D2H - Pageable
+- H2D - Pinned
+- D2H - Pinned
+
+You can include this figure in reports or presentations to visually compare how transfer size and host memory type affect bandwidth.
 
 ---
 
@@ -146,53 +168,14 @@ If you are on a system with a display, a window will also show the plot.
 
 Typical observations:
 
-- For small transfer sizes (e.g., 1–4 MB), measured bandwidth is low and noisy due to fixed overheads dominating (latency bound).
-- As transfer size increases (e.g., 8–32 MB), the effective bandwidth rises and approaches a plateau that reflects the maximum practical throughput.
-- For large transfer sizes (e.g., ≥ 64 MB):
+- For small transfer sizes (for example 1 to 4 MB), measured bandwidth is low and noisy due to fixed overheads dominating (latency bound).
+- As transfer size increases (for example 8 to 32 MB), the effective bandwidth rises and approaches a plateau that reflects the maximum practical throughput.
+- For large transfer sizes (for example 64 MB and above):
   - Pinned memory usually achieves higher and more stable bandwidth than pageable memory.
   - H2D and D2H bandwidths may differ slightly due to hardware and driver asymmetries.
 
 In general:
 
-- Pinned memory is recommended for large, performance-critical transfers.
+- Pinned memory is recommended for large, performance critical transfers.
 - Grouping many small transfers into fewer large transfers improves overall efficiency.
 
----
-
-## LaTeX Report
-
-The file `report.tex` contains a complete report template that:
-
-- Explains the background (H2D, D2H, pageable vs. pinned)
-- Describes the methodology (CUDA events, array sizes, configuration)
-- Includes:
-  - A formatted table of the measured results
-  - A reference to the generated plot `bandwidth_plot.png`
-  - Full source code listings and the plotting script
-
-To compile the report to PDF:
-
-```bash
-pdflatex report.tex
-pdflatex report.tex
-```
-
-The second run ensures that all references (figure, table, etc.) are updated.
-
----
-
-## Notes and Troubleshooting
-
-- If the executable fails with CUDA errors, check:
-  - That the correct GPU device is selected (the code uses device 0 by default).
-  - That your GPU supports the CUDA version installed.
-  - That the system has enough free GPU memory for the largest array size.
-- If very large sizes fail due to memory constraints, you can:
-  - Reduce the maximum size in `main.cu`.
-  - Decrease the number of repetitions (`num_iters`).
-
----
-
-## License
-
-You may adapt a license of your choice (for example MIT, BSD, etc.) depending on your use case and course requirements.
