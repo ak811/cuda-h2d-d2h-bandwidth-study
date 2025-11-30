@@ -1,4 +1,4 @@
-# CPU-GPU Data Transfer Bandwidth using CUDA
+# CPU-GPU Data Transfer Bandwidth with CUDA
 
 This project measures the effective memory transfer bandwidth between host (CPU) memory and device (GPU) memory using CUDA.
 
